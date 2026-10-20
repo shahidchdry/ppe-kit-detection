@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeGuard AI | Real-Time PPE Kit Detection & Compliance Alert System</title>
+    <meta name="description" content="AI-powered Personal Protective Equipment (PPE) kit detection, live violation alerting, and video compliance analysis platform.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>SafeGuard AI</h1>
+                    <span class="sub-text">Intelligent PPE Kit Compliance & Live Alert System</span>
+                </div>
+            </div>
+
+            <div class="nav-status-items">
+                <div class="status-chip active" id="systemStatusChip">
+                    <span class="status-dot"></span>
+                    <span id="modelStatusText">Model: PPE-YOLOv8s Ready</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btnOpenColabModal" title="Learn how to train on Google Colab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Colab Training Guide
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI Metrics Banner -->
+        <section class="kpi-banner">
+            <div class="kpi-card" id="kpiComplianceCard">
+                <div class="kpi-icon emerald">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Site Compliance Rate</span>
+                    <h2 class="kpi-value" id="kpiComplianceRate">--%</h2>
+                </div>
+                <div class="kpi-meta">Standard: &ge; 95%</div>
+            </div>
+
+            <div class="kpi-card" id="kpiViolationsCard">
+                <div class="kpi-icon crimson">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Total Violations</span>
+                    <h2 class="kpi-value alert-text" id="kpiTotalViolations">0</h2>
+                </div>
+                <div class="kpi-meta" id="kpiViolationTypes">Missing Hardhat / Vest</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Persons Tracked</span>
+                    <h2 class="kpi-value" id="kpiPersonsTracked">0</h2>
+                </div>
+                <div class="kpi-meta">Real-time Multi-Object Tracker</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon purple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <div class="kpi-info">
+                    <span class="kpi-label">Active Enforcement</span>
+                    <h2 class="kpi-value" style="font-size: 1.25rem; font-weight: 600;" id="kpiEnforcementList">Hardhat + Vest</h2>
+                </div>
+                <div class="kpi-meta">OSHA 1926.100 Compliant</div>
+            </div>
+        </section>
+
+        <!-- Main Workspace Tabs -->
+        <div class="mode-tabs">
+            <button class="tab-btn active" id="tabVideoFile" onclick="switchMainTab('video')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                Video File Analysis & Player
+            </button>
+            <button class="tab-btn" id="tabWebcam" onclick="switchMainTab('webcam')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+                Live Webcam Safety Scanner
+            </button>
+        </div>
+
+        <!-- Tab 1: Video File Analysis -->
+        <main class="dashboard-grid" id="videoAnalysisSection">
+            <!-- Left Panel: Upload, Player & Controls -->
+            <section class="panel video-panel">
+                <!-- Upload Drop Zone (Visible when no video is loaded or during re-upload) -->
+                <div class="upload-zone" id="dropZone">
+                    <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/avi" hidden>
+                    <div class="upload-icon-wrapper">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Drop Video Here or <span class="highlight">Browse File</span></h3>
+                        <p>Supports MP4, WebM, MOV, AVI (Surveillance, Drone, or Bodycam footage)</p>
+                    </div>
+                    <div class="upload-actions">
+                        <button class="btn btn-primary" onclick="document.getElementById('videoFileInput').click()">
+                            Choose Video File
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Safety Rules & Settings Toolbar -->
+                <div class="rules-bar">
+                    <div class="rule-title">
+                        <span>Safety Requirements:</span>
+                    </div>
+                    <div class="rule-checkboxes">
+                        <label class="checkbox-label" title="Enforce Safety Helmet/Hardhat">
+                            <input type="checkbox" id="chkHardhat" checked>
+                            <span class="custom-checkbox"></span>
+                            🪖 Hardhat
+                        </label>
+                        <label class="checkbox-label" title="Enforce High-Visibility Safety Vest">
+                            <input type="checkbox" id="chkVest" checked>
+                            <span class="custom-checkbox"></span>
+                            🦺 Safety Vest
+                        </label>
+                        <label class="checkbox-label" title="Enforce Face Mask (Hazardous Zones)">
+                            <input type="checkbox" id="chkMask">
+                            <span class="custom-checkbox"></span>
+                            😷 Face Mask
+                        </label>
+                    </div>
+                    <div class="conf-slider-group">
+                        <label for="confRange">Confidence: <span id="confVal">45%</span></label>
+                        <input type="range" id="confRange" min="20" max="90" value="45" step="5">
+                    </div>
+                </div>
+
+                <!-- Processing Progress Overlay / Banner -->
+                <div class="processing-card" id="processingCard" style="display: none;">
+                    <div class="processing-header">
+                        <div class="spinner"></div>
+                        <div class="processing-title">
+                            <strong id="processingStatusText">Processing Video with YOLOv8...</strong>
+                            <span id="processingDetails">Analyzing frames & detecting violations</span>
+                        </div>
+                        <span class="percent-badge" id="processingPercent">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="processing-stats">
+                        <span id="statFrames">Frame: 0 / 0</span>
+                        <span id="statFps">Speed: -- fps</span>
+                        <span id="statAlertsFound">Violations Detected: 0</span>
+                    </div>
+                </div>
+
+                <!-- Video Player Container -->
+                <div class="player-wrapper" id="playerWrapper" style="display: none;">
+                    <div class="player-header">
+                        <div class="player-tabs">
+                            <button class="tab-chip active" id="tabAnnotated" onclick="switchVideoView('annotated')">
+                                🛡️ AI Detected Video
+                            </button>
+                            <button class="tab-chip" id="tabOriginal" onclick="switchVideoView('original')">
+                                📹 Original Video
+                            </button>
+                        </div>
+                        <div class="player-quick-stats">
+                            <span class="badge badge-pulse" id="liveAlertStatusBadge">STATUS: COMPLIANT</span>
+                        </div>
+                    </div>
+
+                    <div class="video-screen-container">
+                        <video id="mainVideoPlayer" controls playsinline preload="metadata">
+                            Your browser does not support HTML5 video.
+                        </video>
+                        <!-- Interactive violation marker indicator on player -->
+                        <div class="alert-overlay-banner" id="playerAlertBanner" style="display: none;">
+                            <span class="hazard-icon">⚠️</span>
+                            <span id="playerAlertBannerText">VIOLATION: Person #1 Missing Hardhat!</span>
+                        </div>
+                    </div>
+
+                    <!-- Player Action Buttons -->
+                    <div class="player-actions">
+                        <a id="btnDownloadVideo" class="btn btn-emerald" href="#" download="detected_ppe_video.mp4">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Detected Video (.mp4)
+                        </a>
+
+                        <button class="btn btn-secondary" id="btnExportReport">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                            Export Audit Report (.csv)
+                        </button>
+
+                        <button class="btn btn-ghost" id="btnResetVideo">
+                            Upload Another Video
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Weight Upload Box (Colab best.pt) -->
+                <div class="custom-weight-card">
+                    <div class="weight-card-info">
+                        <strong>Trained a custom model in Colab?</strong>
+                        <span>Drop your downloaded <code>best.pt</code> file to run your custom model.</span>
+                    </div>
+                    <input type="file" id="weightFileInput" accept=".pt,.onnx" hidden>
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('weightFileInput').click()">
+                        Upload Custom `best.pt`
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Live Alerts Feed & Real-Time Events -->
+            <section class="panel alerts-panel">
+                <div class="alerts-header">
+                    <div class="alerts-title-group">
+                        <div class="hazard-badge">LIVE</div>
+                        <h3>Violation Alerts</h3>
+                        <span class="alert-count-pill" id="alertCountBadge">0</span>
+                    </div>
+
+                    <div class="alerts-controls">
+                        <button class="icon-toggle active" id="btnToggleSound" title="Toggle Audio Alarm">
+                            <svg id="iconSoundOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            </svg>
+                            <svg id="iconSoundOff" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <line x1="23" y1="9" x2="17" y2="15"/>
+                                <line x1="17" y1="9" x2="23" y2="15"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert-tip-banner">
+                    💡 Click on any alert card below to automatically seek the video player to that exact timestamp!
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="filter-bar">
+                    <button class="filter-pill active" data-filter="all">All Alerts</button>
+                    <button class="filter-pill" data-filter="hardhat">Missing Hardhat</button>
+                    <button class="filter-pill" data-filter="vest">Missing Vest</button>
+                </div>
+
+                <!-- Alert Cards Scroll List -->
+                <div class="alerts-list" id="alertsListContainer">
+                    <div class="alerts-empty-state" id="alertsEmptyState">
+                        <div class="empty-icon">🛡️</div>
+                        <h4>No Violations Recorded Yet</h4>
+                        <p>Upload a video to start real-time PPE kit compliance monitoring.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Tab 2: Live Webcam Safety Scanner -->
+        <main class="dashboard-grid webcam-view" id="webcamSection" style="display: none;">
+            <section class="panel video-panel">
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <div class="status-chip active">
+                            <span class="status-dot"></span>
+                            <span>Live Camera Active</span>
+                        </div>
+                        <div class="webcam-actions">
+                            <button class="btn btn-primary btn-sm" id="btnToggleCamera">Start Camera</button>
+                        </div>
+                    </div>
+
+                    <div class="webcam-viewport">
+                        <video id="webcamElement" autoplay playsinline muted style="display: none;"></video>
+                        <canvas id="webcamCanvas"></canvas>
+                        <div class="webcam-placeholder" id="webcamPlaceholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            <h3>Live Camera PPE Scanner</h3>
+                            <p>Click "Start Camera" to test PPE detection directly through your computer webcam!</p>
+                            <button class="btn btn-primary" onclick="initWebcam()">Start Camera Now</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel alerts-panel">
+                <div class="alerts-header">
+                    <h3>Webcam Live Compliance Feed</h3>
+                </div>
+                <div class="alerts-list" id="webcamAlertsContainer">
+                    <div class="alerts-empty-state">
+                        <div class="empty-icon">📹</div>
+                        <h4>Camera Stream Inactive</h4>
+                        <p>Start the camera to monitor yourself or workers in real time.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Colab Modal -->
+        <div class="modal-overlay" id="colabModal" style="display: none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div class="modal-title-group">
+                        <span class="colab-badge">Google Colab</span>
+                        <h3>Training Your PPE Kit Detection Model</h3>
+                    </div>
+                    <button class="modal-close" onclick="closeColabModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>You can train your model with 100% free GPU acceleration on Google Colab:</p>
+                    
+                    <div class="step-card">
+                        <span class="step-number">1</span>
+                        <div>
+                            <strong>Open Google Colab</strong>
+                            <p>Go to <a href="https://colab.research.google.com" target="_blank" rel="noopener">colab.research.google.com</a> and upload <code>model/PPE_Kit_Detection_Training_Colab.ipynb</code>.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <span class="step-number">2</span>
+                        <div>
+                            <strong>Enable Free T4 GPU</strong>
+                            <p>Navigate to <em>Runtime &rarr; Change runtime type</em> &rarr; Select <strong>T4 GPU</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <span class="step-number">3</span>
+                        <div>
+                            <strong>Run Training</strong>
+                            <p>Press <em>Runtime &rarr; Run all</em>. Training takes ~15 minutes and generates <code>best.pt</code> with full evaluation metrics (mAP, confusion matrix).</p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <span class="step-number">4</span>
+                        <div>
+                            <strong>Import to Website</strong>
+                            <p>The notebook automatically triggers a download of <code>best_ppe_yolov8.pt</code>. Click "Upload Custom best.pt" at the bottom of the video panel to start using your trained model!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeColabModal()">Got It</button>
+                    <a class="btn btn-primary" href="https://colab.research.google.com/drive/new" target="_blank" rel="noopener">
+                        Open Google Colab &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- App JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>

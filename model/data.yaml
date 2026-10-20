@@ -1,0 +1,19 @@
+# Roboflow Universe - Construction Site Safety PPE Dataset Configuration
+# Project: roboflow-universe-projects/construction-site-safety (Version 28)
+
+names:
+  0: Hardhat
+  1: Mask
+  2: NO-Hardhat
+  3: NO-Mask
+  4: NO-Safety Vest
+  5: Person
+  6: Safety Cone
+  7: Safety Vest
+  8: machinery
+  9: vehicle
+
+# Safety Compliance Roles:
+# Positive Compliance: Hardhat (0), Safety Vest (7), Mask (1)
+# Direct Safety Violations: NO-Hardhat (2), NO-Safety Vest (4), NO-Mask (3)
+# Subject: Person (5)
